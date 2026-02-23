@@ -60,6 +60,9 @@ function App() {
     [homeworks],
   )
 
+  const completeCount = homeworks.filter((item) => item.completed).length
+  const overdueCount = homeworks.filter((item) => !item.completed && isBefore(parseISO(item.dueDate), new Date())).length
+
   const persistHomeworks = (next: Homework[]) => {
     setHomeworks(next)
     localStorage.setItem(HOMEWORK_KEY, JSON.stringify(next))
@@ -172,11 +175,37 @@ function App() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-6xl p-4 md:p-8">
-      <h1 className="mb-4 text-3xl font-bold text-slate-800">📚 AI 숙제 관리 앱</h1>
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 md:px-8 md:py-10">
+      <section className="mb-8 rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl shadow-slate-300/40 backdrop-blur-xl md:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="mb-2 inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold tracking-wide text-sky-700">
+              SMART STUDY DASHBOARD
+            </p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-4xl">📚 AI 숙제 관리 앱</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+              마감일 중심으로 숙제를 체계적으로 정리하고, Gemini를 활용해 우선순위 플랜과 학습 가이드를 생성하세요.
+            </p>
+          </div>
+          <div className="grid w-full gap-3 sm:grid-cols-3 lg:w-auto">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-center">
+              <p className="text-xs font-medium text-slate-500">전체 숙제</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{homeworks.length}</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-center">
+              <p className="text-xs font-medium text-emerald-600">완료</p>
+              <p className="mt-1 text-2xl font-bold text-emerald-700">{completeCount}</p>
+            </div>
+            <div className="rounded-2xl border border-rose-200 bg-rose-50/70 px-4 py-3 text-center">
+              <p className="text-xs font-medium text-rose-600">지연</p>
+              <p className="mt-1 text-2xl font-bold text-rose-700">{overdueCount}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="mb-6 rounded-xl border border-sky-200 bg-white p-4 shadow-sm">
-        <h2 className="mb-2 text-lg font-semibold">1) Gemini API Key 설정</h2>
+      <section className="mb-6 rounded-2xl border border-white/70 bg-white/85 p-5 shadow-lg shadow-slate-300/30 backdrop-blur-xl md:p-6">
+        <h2 className="mb-2 text-lg font-bold text-slate-900">1) Gemini API Key 설정</h2>
         <p className="mb-3 text-sm text-slate-600">API Key는 브라우저 localStorage에만 저장되며, 서버로 전송되지 않습니다.</p>
         <div className="flex flex-col gap-2 md:flex-row">
           <input
@@ -184,53 +213,56 @@ function App() {
             value={apiKeyInput}
             onChange={(e) => setApiKeyInput(e.target.value)}
             placeholder="Gemini API Key 입력"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm shadow-inner shadow-slate-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
           />
           <button
             type="button"
             onClick={handleSaveApiKey}
-            className="rounded-lg bg-sky-600 px-4 py-2 font-medium text-white hover:bg-sky-700"
+            className="rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-sky-500 hover:to-indigo-500"
           >
             저장/검증
           </button>
         </div>
-        <p className="mt-2 text-sm text-slate-500">현재 상태: {apiKey ? '✅ 사용 가능' : '⚠️ 미설정 (AI 비활성)'}</p>
-        {apiError && <p className="mt-2 text-sm text-rose-600">{apiError}</p>}
+        <p className="mt-2 text-sm font-medium text-slate-500">현재 상태: {apiKey ? '✅ 사용 가능' : '⚠️ 미설정 (AI 비활성)'}</p>
+        {apiError && <p className="mt-2 text-sm font-medium text-rose-600">{apiError}</p>}
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-        <section className="rounded-xl border bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-lg font-semibold">2) 숙제 등록 / 수정</h2>
+      <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="rounded-2xl border border-white/70 bg-white/85 p-5 shadow-lg shadow-slate-300/30 backdrop-blur-xl md:p-6">
+          <h2 className="mb-4 text-lg font-bold text-slate-900">2) 숙제 등록 / 수정</h2>
           <form onSubmit={handleSaveHomework} className="space-y-3">
             <input
               required
               value={form.title}
               onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="숙제 제목"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
             <input
               required
               value={form.subject}
               onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))}
               placeholder="과목"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
             <textarea
               value={form.description}
               onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="설명"
-              className="h-24 w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="h-24 w-full resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
             <input
               required
               type="date"
               value={form.dueDate}
               onChange={(e) => setForm((prev) => ({ ...prev, dueDate: e.target.value }))}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
             />
             <div className="flex gap-2">
-              <button className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700" type="submit">
+              <button
+                className="rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-emerald-500 hover:to-teal-500"
+                type="submit"
+              >
                 {editingId ? '수정 완료' : '숙제 추가'}
               </button>
               {editingId && (
@@ -240,7 +272,7 @@ function App() {
                     setEditingId(null)
                     setForm(emptyForm)
                   }}
-                  className="rounded-lg border border-slate-300 px-4 py-2"
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   취소
                 </button>
@@ -249,14 +281,14 @@ function App() {
           </form>
         </section>
 
-        <section className="rounded-xl border bg-white p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">3) 숙제 목록 (마감일 정렬)</h2>
+        <section className="rounded-2xl border border-white/70 bg-white/85 p-5 shadow-lg shadow-slate-300/30 backdrop-blur-xl md:p-6">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h2 className="text-lg font-bold text-slate-900">3) 숙제 목록 (마감일 정렬)</h2>
             <button
               type="button"
               onClick={() => requestAiHelp()}
               disabled={!apiKey || aiLoading || homeworks.length === 0}
-              className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:bg-violet-300"
+              className="rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-2 text-sm font-semibold text-white shadow-md transition hover:from-violet-500 hover:to-fuchsia-500 disabled:cursor-not-allowed disabled:from-violet-300 disabled:to-fuchsia-300"
             >
               {aiLoading ? 'AI 분석 중...' : 'AI 오늘 계획 생성'}
             </button>
@@ -266,7 +298,10 @@ function App() {
             {sortedHomeworks.map((item) => {
               const overdue = !item.completed && isBefore(parseISO(item.dueDate), new Date())
               return (
-                <li key={item.id} className="rounded-lg border border-slate-200 p-3">
+                <li
+                  key={item.id}
+                  className="rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/70 p-4 shadow-sm transition hover:shadow-md"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className={`font-semibold ${item.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
@@ -277,19 +312,25 @@ function App() {
                       </p>
                       {item.description && <p className="mt-1 text-sm text-slate-500">{item.description}</p>}
                     </div>
-                    <input type="checkbox" checked={item.completed} onChange={() => handleToggleComplete(item.id)} />
+                    <input type="checkbox" checked={item.completed} onChange={() => handleToggleComplete(item.id)} className="mt-1 h-4 w-4" />
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <button onClick={() => handleEditHomework(item)} className="rounded bg-amber-500 px-2 py-1 text-sm text-white">
+                    <button
+                      onClick={() => handleEditHomework(item)}
+                      className="rounded-lg bg-amber-500 px-2.5 py-1.5 text-sm font-medium text-white transition hover:bg-amber-400"
+                    >
                       수정
                     </button>
-                    <button onClick={() => handleDeleteHomework(item.id)} className="rounded bg-rose-500 px-2 py-1 text-sm text-white">
+                    <button
+                      onClick={() => handleDeleteHomework(item.id)}
+                      className="rounded-lg bg-rose-500 px-2.5 py-1.5 text-sm font-medium text-white transition hover:bg-rose-400"
+                    >
                       삭제
                     </button>
                     <button
                       onClick={() => requestAiHelp(item)}
                       disabled={!apiKey || aiLoading}
-                      className="rounded bg-indigo-600 px-2 py-1 text-sm text-white disabled:bg-indigo-300"
+                      className="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-500 disabled:bg-indigo-300"
                     >
                       AI 학습도우미
                     </button>
@@ -302,11 +343,15 @@ function App() {
         </section>
       </div>
 
-      <section className="mt-6 rounded-xl border bg-white p-4 shadow-sm">
-        <h2 className="mb-2 text-lg font-semibold">4) AI 결과</h2>
+      <section className="mt-6 rounded-2xl border border-white/70 bg-white/85 p-5 shadow-lg shadow-slate-300/30 backdrop-blur-xl md:p-6">
+        <h2 className="mb-2 text-lg font-bold text-slate-900">4) AI 결과</h2>
         {!apiKey && <p className="text-sm text-slate-500">API Key를 저장하면 AI 결과가 표시됩니다.</p>}
         {aiLoading && <p className="text-sm text-slate-500">응답 생성 중...</p>}
-        {aiResult && <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{aiResult}</pre>}
+        {aiResult && (
+          <pre className="whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+            {aiResult}
+          </pre>
+        )}
       </section>
     </main>
   )
